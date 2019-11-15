@@ -11,13 +11,14 @@ import (
 var args map[string]string
 var err error
 
-var host string
+var target string
 var requestNum int
 var workerNum int
 
 func init() {
 	resolver := optresolver.OptionResolver{
-		Help:    `========== Bomber ==========`,
+		Description:    ` >> Bomber tool
+Provide a simple way to do load testing against web server.`,
 	}
 
 	resolver.AddOption(optresolver.Option{
@@ -39,8 +40,8 @@ func init() {
 	})
 
 	resolver.AddOption(optresolver.Option{
-		Short:    "h",
-		Long:     "host",
+		Short:    "t",
+		Long:     "target",
 		Required: true,
 		Type:     optresolver.ValueType,
 		Help:     "The host to be targeted",
@@ -54,7 +55,7 @@ func init() {
 }
 
 func main() {
-	host = args["host"]
+	target = args["target"]
 	requestNum, _ = strconv.Atoi(args["request"])
 	workerNum, _ = strconv.Atoi(args["concurrent"])
 
@@ -72,7 +73,7 @@ func main() {
 	for j := 1; j <= requestNum; j++ {
 		jobs <- pkg.Job{
 			Id:  j,
-			Url: host,
+			Url: target,
 		}
 	}
 	fmt.Println("Done.")
