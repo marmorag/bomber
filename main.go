@@ -11,6 +11,10 @@ import (
 var args map[string]string
 var err error
 
+var host string
+var requestNum int
+var workerNum int
+
 func init() {
 	resolver := optresolver.OptionResolver{
 		Help:    `========== Bomber ==========`,
@@ -49,30 +53,63 @@ func init() {
 	}
 }
 
-
 func main() {
-
-	host := args["host"]
-	requestNum, _ := strconv.Atoi(args["request"])
-	workerNum, _ := strconv.Atoi(args["concurrent"])
+	host = args["host"]
+	requestNum, _ = strconv.Atoi(args["request"])
+	workerNum, _ = strconv.Atoi(args["concurrent"])
 
 	jobs := make(chan pkg.Job, requestNum)
 	results := make(chan pkg.Job, requestNum)
 
+	var jobResults []pkg.Job
+
+	fmt.Println(fmt.Sprintf("Spawning workers : %d", workerNum))
 	for w := 1; w <= workerNum; w++ {
 		go pkg.Worker(w, jobs, results)
 	}
 
+	fmt.Printf("Starting job enqueing...")
 	for j := 1; j <= requestNum; j++ {
 		jobs <- pkg.Job{
 			Id:  j,
 			Url: host,
 		}
 	}
+	fmt.Println("Done.")
 
 	close(jobs)
 
+	fmt.Printf("Ready to receive results.")
 	for a := 1; a <= requestNum; a++ {
-		fmt.Println(<-results)
+		jobResults = append(jobResults, <-results)
 	}
+	fmt.Println("All results received.")
+
+	processStats(jobResults)
+}
+
+func processStats(jobs []pkg.Job) {
+	var totalTime float64
+	totalSuccess := 0
+	maxTime := jobs[0].Time
+	minTime := jobs[0].Time
+
+	for _, value := range jobs {
+		totalTime += value.Time
+
+		if value.Response == 200 {
+			totalSuccess++
+		}
+
+		if value.Time > maxTime{
+			maxTime = value.Time
+		}
+
+		if value.Time < minTime {
+			minTime = value.Time
+		}
+	}
+
+	avgTime := totalTime / float64(len(jobs))
+	fmt.Println(fmt.Sprintf("OK Request : %d/%d ; avg %f ; min %f ; max %f", totalSuccess, len(jobs), avgTime, minTime, maxTime))
 }
