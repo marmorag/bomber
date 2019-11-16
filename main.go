@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/marmorag/bomber/pkg"
-	"github.com/marmorag/optresolver/pkg/optresolver"
+	"github.com/marmorag/optresolver"
 	"os"
 	"strconv"
 )
@@ -21,7 +21,7 @@ func init() {
 Provide a simple way to do load testing against web server.`,
 	}
 
-	resolver.AddOption(optresolver.Option{
+	_ = resolver.AddOption(optresolver.Option{
 		Short:    "r",
 		Long:     "request",
 		Required: false,
@@ -30,7 +30,7 @@ Provide a simple way to do load testing against web server.`,
 		Help:     "The number of request to send",
 	})
 
-	resolver.AddOption(optresolver.Option{
+	_ = resolver.AddOption(optresolver.Option{
 		Short:    "c",
 		Long:     "concurrent",
 		Required: false,
@@ -39,7 +39,7 @@ Provide a simple way to do load testing against web server.`,
 		Help:     "The number of concurrent request to be send",
 	})
 
-	resolver.AddOption(optresolver.Option{
+	_ = resolver.AddOption(optresolver.Option{
 		Short:    "t",
 		Long:     "target",
 		Required: true,
@@ -47,7 +47,7 @@ Provide a simple way to do load testing against web server.`,
 		Help:     "The host to be targeted",
 	})
 
-	args, err = resolver.Parse(os.Args)
+	args, err = resolver.Resolve(os.Args)
 
 	if err != nil {
 		fmt.Println(err)
